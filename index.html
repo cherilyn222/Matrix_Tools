@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <title>Matrix Tools</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 关键：手机适配 -->
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
 
 <style>
   html,body{
     height:100%; margin:0;
     font-family:'Playfair Display',serif;
-    background:url('Calculate DET.png') center/cover no-repeat fixed; /* 这里改成你的背景图名字 */
+    background:url('Calculate DET.png') center/cover no-repeat fixed; /* 换成你自己的背景图名也行 */
     color:#f0efe9;
     display:flex;
     flex-direction:column;
@@ -42,19 +43,15 @@
     padding:10px;
     scrollbar-width:none;
   }
-
   .row::-webkit-scrollbar{
     height:6px;
-  }
-  .row::-webkit-scrollbar-track{
-    background:transparent;
   }
   .row::-webkit-scrollbar-thumb{
     background:rgba(255,255,255,0.25);
     border-radius:3px;
   }
 
-  /* 单个功能卡片 */
+  /* 单个卡片 */
   .card{
     width:300px;
     background:rgba(0,0,0,0.58);
@@ -139,18 +136,24 @@
     text-shadow:0 0 6px rgba(255,120,120,0.7);
   }
 
-  /* 手机 / 小屏优化：一列竖排，字号正常大小 */
+  /* 手机 / 小屏：一列竖排，不缩放 */
   @media (max-width: 900px){
+    html,body{
+      align-items:stretch;
+    }
     .title{
       margin-top:24px;
       font-size:30px;
+      text-align:center;
     }
     .stage{
       transform:scale(1);
-      margin-top:20px;
+      margin-top:16px;
+      width:100%;
     }
     .row{
       flex-wrap:wrap;
+      justify-content:center;
       overflow-x:hidden;
       gap:16px;
     }
@@ -163,7 +166,7 @@
 
 <body>
 
-  <!-- 顶部标题 -->
+  <!-- 标题 -->
   <h1 class="title">Matrix Tools</h1>
 
   <!-- 四个功能卡 -->
@@ -228,7 +231,7 @@
   }
 
   function calcDet(){
-    const out = document.getElementById('detRes');
+    const out = detRes;
     try{
       const A = parseMatrix(detM.value);
       if (A.length === 0) throw "矩阵不能为空";
@@ -241,7 +244,7 @@
   }
 
   function calcCross(){
-    const out = document.getElementById('crossRes');
+    const out = crossRes;
     try{
       const A = vecA.value.trim().split(/\s+/).map(Number);
       const B = vecB.value.trim().split(/\s+/).map(Number);
@@ -255,7 +258,7 @@
   }
 
   function calcMult(){
-    const out = document.getElementById('multRes');
+    const out = multRes;
     try{
       const A = parseMatrix(M1.value);
       const B = parseMatrix(M2.value);
@@ -297,7 +300,7 @@
   }
 
   function calcRREF(){
-    const out = document.getElementById('rrefRes');
+    const out = rrefRes;
     try{
       const A = parseMatrix(R.value);
       if (A.length === 0) throw "矩阵不能为空";
