@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Matrix Tools</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            font-family: 'Playfair Display', serif;
+            background: url('Calculate DET.png') center/cover no-repeat fixed;
+            color: #f0efe9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 顶部标题 */
+        .title {
+            margin-top: 160px;
+            font-size: 60px;
+            font-weight: 600;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        /* 控制四张卡片整体缩放 & 下移 */
+        .stage {
+            margin-top: 30px;
+            /* 调这里 ↓ 可以让整体再往下 */
+            transform: scale(1.05);
+            /* 整体缩放比例 */
+            transform-origin: top center;
+        }
+
+        /* 四卡横排 */
+        .row {
+            display: flex;
+            gap: 24px;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: flex-start;
+            overflow-x: auto;
+            padding: 10px;
+            scrollbar-width: none;
+        }
+
+        /* 卡片本体 */
+        .card {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+            transition: all .3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 0 16px rgba(100, 255, 150, 0.35);
+        }
+
+        h3 {
+            margin: 0 0 8px;
+            text-align: center;
+            font-size: 20px;
+        }
+
+        .hint {
+            margin: 0 0 8px;
+            font-size: 14px;
+            opacity: 0.9;
+            text-align: center;
+        }
+
+        textarea,
+        input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, 0.88);
+            color: #1e1e1e;
+            border: none;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            margin-top: 6px;
+            resize: none;
+            outline: none;
+        }
+
+        textarea:focus,
+        input:focus {
+            box-shadow: 0 0 8px rgba(108, 255, 150, .3);
+        }
+
+        .btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            background: transparent;
+            border: 1px solid #b4ffb0;
+            color: #e9ffe9;
+            cursor: pointer;
+            letter-spacing: .6px;
+            transition: all .3s ease;
+        }
+
+        .btn:hover {
+            background: rgba(180, 255, 176, 0.15);
+            box-shadow: 0 0 16px rgba(180, 255, 176, 0.5);
+            border-color: #d2ffd2;
+        }
+
+        .result {
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            white-space: pre-wrap;
+            text-shadow: 0 0 4px rgba(100, 255, 150, .4);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 顶部标题 -->
+    <h1 class="title">Matrix Tools</h1>
+
+    <!-- 四卡整体 -->
+    <div class="stage">
+        <div class="row">
+
+            <!-- Determinant -->
+            <div class="card">
+                <h3>Determinant</h3>
+                <p class="hint">输入方阵</p>
+                <textarea id="detM" placeholder="1 2 3
+4 5 6
+7 8 10"></textarea>
+                <button class="btn" onclick="calcDet()">CLICK to CALCULATE</button>
+                <div id="detRes" class="result"></div>
+            </div>
+
+            <!-- Cross Product -->
+            <div class="card">
+                <h3>Cross Product</h3>
+                <p class="hint">3D 向量</p>
+                <input id="vecA" placeholder="A: 1 2 3">
+                <input id="vecB" placeholder="B: 4 5 6">
+                <button class="btn" onclick="calcCross()">CLICK to CALCULATE</button>
+                <div id="crossRes" class="result"></div>
+            </div>
+
+            <!-- Matrix Multiply -->
+            <div class="card">
+                <h3>Matrix Multiplication</h3>
+                <p class="hint">A×B</p>
+                <textarea id="M1" placeholder="1 2
+3 4"></textarea>
+                <textarea id="M2" placeholder="5 6
+7 8"></textarea>
+                <button class="btn" onclick="calcMult()">CLICK to CALCULATE</button>
+                <div id="multRes" class="result"></div>
+            </div>
+
+            <!-- RREF -->
+            <div class="card">
+                <h3>RREF</h3>
+                <p class="hint">任意 m×n 矩阵</p>
+                <textarea id="R" placeholder="1 2 3
+4 5 6"></textarea>
+                <button class="btn" onclick="calcRREF()">CLICK to CALCULATE</button>
+                <div id="rrefRes" class="result"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.0.1/math.min.js"></script>
+    <script>
+        const isInt = v => Math.abs(v - Math.round(v)) < 1e-10;
+        const parseMatrix = t => t.trim().split(/\n+/).map(r => r.trim().split(/\s+/).map(Number));
+
+        function calcDet() {
+            const out = detRes;
+            try {
+                const A = parseMatrix(detM.value);
+                if (A.some(r => r.length !== A.length)) throw "必须是方阵";
+                const d = math.det(A);
+                out.textContent = "det = " + (isInt(d) ? Math.round(d) : d.toFixed(4));
+            } catch (e) { out.textContent = "Error: " + e; }
+        }
+
+        function calcCross() {
+            const out = crossRes;
+            try {
+                const A = vecA.value.trim().split(/\s+/).map(Number);
+                const B = vecB.value.trim().split(/\s+/).map(Number);
+                if (A.length !== 3 || B.length !== 3) throw "必须是3维向量";
+                const C = math.cross(A, B);
+                out.textContent = "A×B = [" + C.map(v => isInt(v) ? Math.round(v) : v.toFixed(4)).join(" ") + "]";
+            } catch (e) { out.textContent = "Error: " + e; }
+        }
+
+        function calcMult() {
+            const out = multRes;
+            try {
+                const A = parseMatrix(M1.value);
+                const B = parseMatrix(M2.value);
+                const P = math.multiply(A, B);
+                const s = P.map(r => r.map(v => isInt(v) ? Math.round(v) : v.toFixed(4)).join(" ")).join("\n");
+                out.textContent = "A×B =\n" + s;
+            } catch (e) { out.textContent = "Error: " + e; }
+        }
+
+        function rref(A) {
+            const M = A.map(r => r.slice());
+            let r = 0, rows = M.length, cols = M[0].length;
+            for (let c = 0; c < cols && r < rows; c++) {
+                let piv = r;
+                for (let i = r; i < rows; i++)
+                    if (Math.abs(M[i][c]) > Math.abs(M[piv][c])) piv = i;
+                if (Math.abs(M[piv][c]) < 1e-10) continue;
+
+                [M[piv], M[r]] = [M[r], M[piv]];
+                const div = M[r][c];
+                for (let j = c; j < cols; j++) M[r][j] /= div;
+
+                for (let i = 0; i < rows; i++) {
+                    if (i === r) continue;
+                    const f = M[i][c];
+                    for (let j = c; j < cols; j++) M[i][j] -= f * M[r][j];
+                }
+                r++;
+            }
+            return M;
+        }
+
+        function calcRREF() {
+            const out = rrefRes;
+            try {
+                const A = parseMatrix(R.value);
+                const R2 = rref(A);
+                const s = R2.map(r => r.map(v => isInt(v) ? Math.round(v) : v.toFixed(4)).join(" ")).join("\n");
+                out.textContent = "RREF =\n" + s;
+            } catch (e) { out.textContent = "Error: " + e; }
+        }
+    </script>
+
+</body>
+
+</html>
